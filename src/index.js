@@ -1,17 +1,34 @@
-const express = require('express')
+import express from "express"
+import 'dotenv/config'
+
+import { findOrCreateImageRecord, initialization } from "./main.js"
+
 const app = express()
 const port = 3000
 
-app.get('/', (req, res) => {
-    res.send('Hello World!')
-})
+async function main() {
+    await initialization()
 
-app.get('/pic', (req, res) => {
-    const url = req.query.url;
+    app.get('/', (req, res) => {
+        res.send('Hello World!')
+    })
 
-    res.send(url)
-})
+    app.get('/pic', async (req, res) => {
+        const url = req.query.url;
 
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-})
+        try {
+            const imageRecord = await findOrCreateImageRecord(url);
+            console.log(imageRecord)
+        } catch {
+            res.status(404).send(`Could not retrieve ${url}`)
+        }
+
+        res.send(url)
+    })
+
+    app.listen(port, () => {
+        console.log(`Example app listening on port ${port}`)
+    })
+}
+
+main()

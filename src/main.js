@@ -6,27 +6,31 @@ import mime from "mime-types"
 import Images from "./db/image.js"
 import Database from "./db/index.js";
 
+const db = new Database(`${process.env.DATA_PATH}/main.sqlite`)
+const images = new Images(db);
+const imagesPath = `${process.env.DATA_PATH}/images`
 
-const basePath = "/Users/nicolewatts/workspace/freshrss-image-proxy/images"
-
-async function X() {
-    const db = new Database("./main.sqlite")
-    const images = new Images(db);
+export async function initialization() {
     await images.createTable()
+    if (!fs.existsSync(imagesPath)) {
+        fs.mkdirSync(imagesPath);
+    }
+}
 
-    const url = "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png"
+export async function findOrCreateImageRecord(url) {
     var imageRecord = await images.findByUrl(url)
 
     if (!imageRecord) {
-        const downloadedImage = await downloadImage(basePath, url);
+        const downloadedImage = await downloadImage(imagesPath, url);
         await images.insert(
             url,
-            downloadedImage.filename)
+            downloadedImage.filename,
+            downloadedImage.contentType)
 
         var imageRecord = await images.findByUrl(url)
     }
 
-    console.log(imageRecord)
+    return imageRecord
 }
 
 async function downloadImage(basePath, url) {
@@ -43,5 +47,3 @@ async function downloadImage(basePath, url) {
         contentType: contentType
     }
 }
-
-X()
