@@ -17,10 +17,12 @@ async function main() {
     })
 
     app.get('/pic', async (req, res) => {
+        console.log(`Requesting: ${req.query.url}`)
         const url = req.query.url;
 
         try {
             const imageRecord = await findOrCreateImageRecord(url);
+            console.log(imageRecord)
             res.sendFile(`${process.env.DATA_PATH}/images/${imageRecord.fileId}`);
         } catch (e) {
             console.log(e)
@@ -31,6 +33,8 @@ async function main() {
     app.use(express.json());
 
     app.post("/prepare", async (req, res) => {
+        console.log(`Preparing: ${req.body.url}`)
+
         if (req.body.access_token !== process.env.ACCESS_TOKEN) {
             res.status(401).send(`Unauthorized`);
             return
